@@ -21,7 +21,7 @@ class InvertedIndex:
         self.index_path = os.path.join(CACHE_DIR, "index.pkl")
         self.docmap_path = os.path.join(CACHE_DIR, "docmap.pkl")
         self.term_frequencies_path = os.path.join(CACHE_DIR, "term_frequencies.pkl")
-        self.term_frequencies: dict[int, Counter[str]] = {}
+        self.term_frequencies: dict[int, Counter[str]] = defaultdict(Counter)
 
     def build(self) -> None:
         movies = load_movies()
@@ -63,7 +63,7 @@ class InvertedIndex:
 
     def __add_document(self, doc_id: int, text: str) -> None:
         tokens = tokenize_text(text)
-        for token in set(tokens):
+        for token in tokens:
             self.index[token].add(doc_id)
             self.term_frequencies[doc_id][token] += 1
 
@@ -101,6 +101,16 @@ def search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
                 break
 
     return results
+
+
+def get_tf_command(doc_id: int, term: str) -> int:
+    idx = InvertedIndex()
+    try:
+        idx.load()
+    except FileNotFoundError:
+        print("Error: Index files not found. Please run the build command first.")
+        sys.exit(1)
+    return idx.get_tf(doc_id, term)
 
 
 def has_matching_token(query_tokens: list[str], title_tokens: list[str]) -> bool:

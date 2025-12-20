@@ -2,7 +2,7 @@
 
 import argparse
 
-from lib.keyword_search import build_command, search_command
+from lib.keyword_search import build_command, search_command, get_tf_command
 
 
 def main() -> None:
@@ -13,6 +13,10 @@ def main() -> None:
 
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
+
+    tf_parser = subparsers.add_parser("tf", help="Get term frequency")
+    tf_parser.add_argument("doc_id", type=int, help="Document ID")
+    tf_parser.add_argument("term", type=str, help="Term")
 
     args = parser.parse_args()
 
@@ -26,6 +30,9 @@ def main() -> None:
             results = search_command(args.query)
             for i, res in enumerate(results, 1):
                 print(f"{i}. ({res['id']}) {res['title']}")
+        case "tf":
+            tf = get_tf_command(args.doc_id, args.term)
+            print(f"Doc ID: {args.doc_id}, Term: {args.term}, TF: {tf}")
         case _:
             parser.print_help()
 
