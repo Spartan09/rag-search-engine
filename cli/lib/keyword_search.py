@@ -1,3 +1,4 @@
+import math
 import os
 import pickle
 import string
@@ -73,6 +74,18 @@ class InvertedIndex:
             raise ValueError(f"Expected single term, but received multiple: '{term}'")
         return self.term_frequencies.get(doc_id, {}).get(tokenized_term[0], 0)
 
+    def get_idf(self, term: str) -> float:
+        tokenized_term = tokenize_text(term)
+        if len(tokenized_term) > 1:
+            raise ValueError(f"Expected single term, but received multiple: '{term}'")
+        total_doc_count = len(self.docmap)
+        term_match_doc_count = len(self.index.get(tokenized_term[0], set()))
+        idf = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+        return idf
+
+    def get_tfidf(self, doc_id: int, term: str) -> float:
+        return self.get_tf(doc_id, term) * self.get_idf(term)
+
 
 def build_command() -> None:
     idx = InvertedIndex()
@@ -111,6 +124,26 @@ def get_tf_command(doc_id: int, term: str) -> int:
         print("Error: Index files not found. Please run the build command first.")
         sys.exit(1)
     return idx.get_tf(doc_id, term)
+
+
+def get_idf_command(term: str) -> float:
+    idx = InvertedIndex()
+    try:
+        idx.load()
+    except FileNotFoundError:
+        print("Error: Index files not found. Please run the build command first.")
+        sys.exit(1)
+    return idx.get_idf(term)
+
+
+def get_tfidf_command(doc_id: int, term: str) -> float:
+    idx = InvertedIndex()
+    try:
+        idx.load()
+    except FileNotFoundError:
+        print("Error: Index files not found. Please run the build command first.")
+        sys.exit(1)
+    return idx.get_tfidf(doc_id, term)
 
 
 def has_matching_token(query_tokens: list[str], title_tokens: list[str]) -> bool:
