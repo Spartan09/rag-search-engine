@@ -16,6 +16,8 @@ CACHE_DIR = os.path.join(PROJECT_ROOT, "cache")
 BM25_B = 0.75
 BM25_K1 = 1.5
 
+DEFAULT_SEARCH_LIMIT = 5
+
 
 def load_movies() -> list[dict]:
     with open(DATA_PATH, "r") as f:
@@ -50,3 +52,10 @@ def format_search_result(
         "score": round(score, SCORE_PRECISION),
         "metadata": metadata if metadata else {},
     }
+
+
+def pretty_print_results(results: list[dict]):
+    for i, result in enumerate(results):
+        print(
+            f"{i + 1}. {result['title']} ({result['score']})\n{result['description']}"
+        )
